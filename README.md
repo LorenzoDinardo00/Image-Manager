@@ -1,1 +1,1 @@
-# Image-Manager
+# image.Image-Manager
