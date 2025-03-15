@@ -22,7 +22,7 @@ public class Main {
         do {
             // Se l'utente è loggato, mostriamo anche l'opzione 3 per caricare l'immagine
             if (isLoggedIn) {
-                System.out.println("Digita 0 per uscire, 3 per caricare immagine:");
+                System.out.println("Digita 0 per uscire, 3 per caricare immagine, 4 per salvare immagine:");
             } else {
                 System.out.println("Digita 0 per uscire, 1 per il Login, 2 per la Registrazione:");
             }
@@ -112,6 +112,21 @@ public class Main {
                         }
                     } catch (Exception e) {
                         System.out.println("Errore durante il caricamento dell'immagine: " + e.getMessage());
+                    }
+
+                } else if (scelta == 4) {
+                    if (loadedImg == null) {
+                        System.out.println("Nessuna immagine caricata. Carica prima un'immagine.");
+                    } else {
+                        System.out.print("Inserisci il path della cartella dove salvare l'immagine: ");
+                        String folderPath = scanner.nextLine();
+                        ImageManager manager = new ImageManager();
+                        boolean saved = manager.saveImage(loadedImg, folderPath);
+                        if (saved) {
+                            System.out.println("Immagine salvata con successo!");
+                        } else {
+                            System.out.println("Errore nel salvataggio dell'immagine.");
+                        }
                     }
 
                 } else if (scelta == 0) {
