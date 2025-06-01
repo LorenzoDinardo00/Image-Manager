@@ -24,7 +24,6 @@ public class AuthController {
         String loginUsername = scanner.nextLine();
         System.out.print("Inserisci password: ");
         String loginPassword = scanner.nextLine();
-
         try {
             User user = authService.login(loginUsername, loginPassword);
             System.out.println("Login effettuato con successo! Benvenuto " + user.getName());
