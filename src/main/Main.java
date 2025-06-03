@@ -9,6 +9,12 @@ import dao.UserDao;    // Importa l'interfaccia
 import dao.impl.CommentDAOImpl;
 import dao.impl.PostDAOImpl;
 import dao.impl.UserDAOImpl;
+import mapper.CommentMapper;
+import mapper.PostMapper;
+import mapper.UserMapper;
+import mapper.impl.CommentMapperImpl;
+import mapper.impl.PostMapperImpl;
+import mapper.impl.UserMapperImpl;
 import model.Image;
 import model.Role;
 import model.User;
@@ -31,25 +37,27 @@ public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
-        // --- Setup delle Dipendenze (Dependency Injection manuale) ---
 
-        // 1. Creazione dei DAO (implementazioni concrete)
-        UserDao userDAO = new UserDAOImpl();
-        PostDao postDAO = new PostDAOImpl();
-        CommentDao commentDAO = new CommentDAOImpl();
+        // 1. Creazione dei Mapper
+                UserMapper userMapper = new UserMapperImpl();
+                PostMapper postMapper = new PostMapperImpl();
+                CommentMapper commentMapper = new CommentMapperImpl();
 
-        // 2. Creazione dei Service (implementazioni concrete, con iniezione dei DAO)
-        // Si usano le interfacce per dichiarare i service, ma si istanziano le implementazioni
-        AuthService authService = new AuthServiceImpl(userDAO);
-        PostService postService = new PostServiceImpl(postDAO, commentDAO);
-        ImageService imageService = new ImageServiceImpl(); // ImageServiceImpl non ha dipendenze DAO nel costruttore attualmente
+        // 2. Creazione dei DAO (implementazioni concrete con mapper iniettati)
+                UserDao userDAO = new UserDAOImpl(userMapper);
+                PostDao postDAO = new PostDAOImpl(postMapper);
+                CommentDao commentDAO = new CommentDAOImpl(commentMapper);
 
-        // 3. Creazione dei Controller (con iniezione dei Service)
-        AuthController authController = new AuthController(authService, scanner);
-        ImageController imageController = new ImageController(imageService, scanner);
-        PostController postController = new PostController(postService, scanner);
+        // 3. Creazione dei Service (implementazioni concrete, con iniezione dei DAO)
+                AuthService authService = new AuthServiceImpl(userDAO);
+                PostService postService = new PostServiceImpl(postDAO, commentDAO);
+                ImageService imageService = new ImageServiceImpl();
 
-        // --- Fine Setup Dipendenze ---
+        // 4. Creazione dei Controller (con iniezione dei Service)
+                AuthController authController = new AuthController(authService, scanner);
+                ImageController imageController = new ImageController(imageService, scanner);
+                PostController postController = new PostController(postService, scanner);
+
 
 
         System.out.println("Benvenuto all'Image Manager (Refactored)!");

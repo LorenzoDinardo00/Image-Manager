@@ -1,6 +1,8 @@
 package dao.impl;
 
 import dao.CommentDao;
+import mapper.CommentMapper;
+import mapper.impl.CommentMapperImpl;
 import model.Comment;
 import util.DatabaseConnection;
 
@@ -10,14 +12,26 @@ import java.util.List;
 
 public class CommentDAOImpl implements CommentDao {
 
+    private final CommentMapper commentMapper;
+
+    // Constructor di default che crea il mapper internamente
+    public CommentDAOImpl() {
+        this.commentMapper = new CommentMapperImpl();
+    }
+
+    // Constructor per dependency injection del mapper
+    public CommentDAOImpl(CommentMapper commentMapper) {
+        this.commentMapper = commentMapper;
+    }
+
     @Override
     public boolean addComment(Comment comment) throws SQLException {
         String sql = "INSERT INTO comments (post_id, commenter_username, comment_text) VALUES (?, ?, ?)";
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            ps.setInt(1, comment.getPostId());
-            ps.setString(2, comment.getCommenterUsername());
-            ps.setString(3, comment.getCommentText());
+
+            commentMapper.mapToInsertStatement(ps, comment);
+
             int affectedRows = ps.executeUpdate();
             if (affectedRows > 0) {
                 try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
@@ -40,15 +54,7 @@ public class CommentDAOImpl implements CommentDao {
             ps.setInt(1, postId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    Comment comment = new Comment();
-                    comment.setCommentId(rs.getInt("comment_id"));
-                    comment.setPostId(rs.getInt("post_id"));
-                    comment.setCommenterUsername(rs.getString("commenter_username"));
-                    comment.setCommentText(rs.getString("comment_text"));
-                    Timestamp commentedAtTimestamp = rs.getTimestamp("commented_at");
-                    if(commentedAtTimestamp != null) {
-                        comment.setCommentedAt(commentedAtTimestamp.toLocalDateTime());
-                    }
+                    Comment comment = commentMapper.fromResultSet(rs);
                     comments.add(comment);
                 }
             }
