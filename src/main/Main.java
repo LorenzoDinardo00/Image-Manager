@@ -1,4 +1,4 @@
-package main;
+package main; // Assumendo che Main sia nel package root del progetto refactorizzato
 
 import controller.AuthController;
 import controller.ImageController;
@@ -31,6 +31,7 @@ public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
+        // --- Setup delle Dipendenze (Dependency Injection manuale) ---
 
         // 1. Creazione dei DAO (implementazioni concrete)
         UserDao userDAO = new UserDAOImpl();
@@ -38,6 +39,7 @@ public class Main {
         CommentDao commentDAO = new CommentDAOImpl();
 
         // 2. Creazione dei Service (implementazioni concrete, con iniezione dei DAO)
+        // Si usano le interfacce per dichiarare i service, ma si istanziano le implementazioni
         AuthService authService = new AuthServiceImpl(userDAO);
         PostService postService = new PostServiceImpl(postDAO, commentDAO);
         ImageService imageService = new ImageServiceImpl(); // ImageServiceImpl non ha dipendenze DAO nel costruttore attualmente
@@ -70,6 +72,7 @@ public class Main {
             scelta = scanner.nextInt();
             scanner.nextLine(); // Consuma il newline rimasto
 
+            // Ora Main interagisce solo con i Controller
             if (currentUser == null) {
                 handleVisitorActions(scelta, authController, postController);
             } else {
@@ -111,6 +114,8 @@ public class Main {
         System.out.println("0. Esci dall'applicazione");
     }
 
+    // handleVisitorActions e handleUserActions rimangono invariati
+    // poiché già utilizzano i controller passati come argomenti.
 
     private static void handleVisitorActions(int scelta, AuthController authController, PostController postController) {
         switch (scelta) {
@@ -147,6 +152,7 @@ public class Main {
                             System.out.println("Caricamento annullato.");
                             break;
                         }
+                        // tempScanner.close(); // Non chiudere System.in se usato altrove, o usare con try-with-resources
                     }
                     loadedImg = imageController.loadImage();
                     break;
@@ -161,12 +167,23 @@ public class Main {
                     break;
                 case 8: // PUBBLICA IMMAGINE CARICATA COME POST
                     postController.publishLoadedImageAsPost(loadedImg, currentUser);
-
+                    // Opzionalmente, si potrebbe resettare loadedImg a null dopo la pubblicazione
+                    // se l'immagine in memoria non serve più immediatamente.
+                    // loadedImg = null;
                     break;
             }
         }
 
-        // Gestione comune per tutti gli utenti loggati
+        // Azioni comuni a tutti gli utenti loggati (o che cadono qui se non gestite sopra per AUTORE)
+        // Nota: per evitare che un'azione di AUTORE venga interpretata come "Scelta non valida"
+        // se non è una delle azioni comuni, è meglio strutturare diversamente o
+        // aggiungere un controllo per vedere se l'azione è già stata gestita.
+        // L'attuale struttura con due switch potrebbe portare a messaggi di "Scelta non valida"
+        // se un AUTORE sceglie 3,4,5,8 e poi il secondo switch non trova un match.
+        // Una soluzione è unire gli switch o usare if/else if.
+
+        // Per mantenere la logica il più simile possibile all'originale, ma correggendo
+        // il potenziale doppio messaggio di "Scelta non valida":
 
         boolean actionHandled = false;
         if (currentUser.getRole() == Role.AUTORE && (scelta == 3 || scelta == 4 || scelta == 5 || scelta == 8)) {
@@ -175,7 +192,7 @@ public class Main {
 
 
         switch (scelta) {
-                case 7: // VISUALIZZA ELENCO POST (Accessibile da tutti gli utenti loggati)
+            case 7: // VISUALIZZA ELENCO POST (Accessibile da tutti gli utenti loggati)
                 postController.viewAllPosts(currentUser);
                 actionHandled = true;
                 break;
