@@ -1,8 +1,8 @@
 package dao.impl;
 
-
 import dao.PostDao;
 import model.Post;
+import model.mapper.PostMapper;
 import util.DatabaseConnection;
 
 import java.sql.*;
@@ -10,6 +10,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PostDAOImpl implements PostDao {
+
+    // NUOVO: Aggiungiamo il mapper
+    private final PostMapper postMapper = new PostMapper();
 
     @Override
     public boolean createPost(Post post) throws SQLException {
@@ -19,12 +22,8 @@ public class PostDAOImpl implements PostDao {
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-            ps.setString(1, post.getAuthorUsername());
-            ps.setBytes(2, post.getImageData());
-            ps.setLong(3, post.getImageSize());
-            ps.setString(4, post.getImageFormat());
-            ps.setString(5, post.getDescription());
-            ps.setInt(6, 0);
+            // MODIFICATO: Ora usa il mapper per settare i parametri
+            postMapper.setInsertParameters(ps, post);
 
             int affectedRows = ps.executeUpdate();
 
@@ -32,7 +31,6 @@ public class PostDAOImpl implements PostDao {
                 try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
                     if (generatedKeys.next()) {
                         post.setPostId(generatedKeys.getInt(1));
-
                     }
                 }
                 return true;
@@ -51,18 +49,8 @@ public class PostDAOImpl implements PostDao {
             ps.setInt(1, postId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    post = new Post();
-                    post.setPostId(rs.getInt("post_id"));
-                    post.setAuthorUsername(rs.getString("author_username"));
-                    post.setImageData(rs.getBytes("image_data"));
-                    post.setImageSize(rs.getLong("image_size"));
-                    post.setImageFormat(rs.getString("image_format"));
-                    post.setDescription(rs.getString("description"));
-                    post.setLikesCount(rs.getInt("likes_count"));
-                    Timestamp createdAtTimestamp = rs.getTimestamp("created_at");
-                    if (createdAtTimestamp != null) {
-                        post.setCreatedAt(createdAtTimestamp.toLocalDateTime());
-                    }
+                    // MODIFICATO: Ora usa il mapper invece del codice di mappatura manuale
+                    post = postMapper.fromResultSet(rs);
                 }
             }
         }
@@ -72,26 +60,15 @@ public class PostDAOImpl implements PostDao {
     @Override
     public List<Post> getAllPosts() throws SQLException {
         List<Post> posts = new ArrayList<>();
-        String sql = "SELECT post_id, author_username, image_data, image_size, image_format, description, likes_count, created_at FROM posts ORDER BY created_at DESC"; //
+        String sql = "SELECT post_id, author_username, image_data, image_size, image_format, description, likes_count, created_at FROM posts ORDER BY created_at DESC";
 
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
-                Post post = new Post();
-                post.setPostId(rs.getInt("post_id"));
-                post.setAuthorUsername(rs.getString("author_username"));
-                post.setImageData(rs.getBytes("image_data"));
-                post.setImageSize(rs.getLong("image_size"));
-                post.setImageFormat(rs.getString("image_format"));
-                post.setDescription(rs.getString("description"));
-                post.setLikesCount(rs.getInt("likes_count"));
-                Timestamp createdAtTimestamp = rs.getTimestamp("created_at");
-                if (createdAtTimestamp != null) {
-                    post.setCreatedAt(createdAtTimestamp.toLocalDateTime());
-                }
-                posts.add(post);
+                // MODIFICATO: Ora usa il mapper per ogni riga
+                posts.add(postMapper.fromResultSet(rs));
             }
         }
         return posts;

@@ -2,6 +2,7 @@ package dao.impl;
 
 import dao.CommentDao;
 import model.Comment;
+import model.mapper.CommentMapper;
 import util.DatabaseConnection;
 
 import java.sql.*;
@@ -10,14 +11,18 @@ import java.util.List;
 
 public class CommentDAOImpl implements CommentDao {
 
+    // NUOVO: Aggiungiamo il mapper
+    private final CommentMapper commentMapper = new CommentMapper();
+
     @Override
     public boolean addComment(Comment comment) throws SQLException {
         String sql = "INSERT INTO comments (post_id, commenter_username, comment_text) VALUES (?, ?, ?)";
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            ps.setInt(1, comment.getPostId());
-            ps.setString(2, comment.getCommenterUsername());
-            ps.setString(3, comment.getCommentText());
+
+            // MODIFICATO: Ora usa il mapper per settare i parametri
+            commentMapper.setInsertParameters(ps, comment);
+
             int affectedRows = ps.executeUpdate();
             if (affectedRows > 0) {
                 try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
@@ -40,16 +45,8 @@ public class CommentDAOImpl implements CommentDao {
             ps.setInt(1, postId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    Comment comment = new Comment();
-                    comment.setCommentId(rs.getInt("comment_id"));
-                    comment.setPostId(rs.getInt("post_id"));
-                    comment.setCommenterUsername(rs.getString("commenter_username"));
-                    comment.setCommentText(rs.getString("comment_text"));
-                    Timestamp commentedAtTimestamp = rs.getTimestamp("commented_at");
-                    if(commentedAtTimestamp != null) {
-                        comment.setCommentedAt(commentedAtTimestamp.toLocalDateTime());
-                    }
-                    comments.add(comment);
+                    // MODIFICATO: Ora usa il mapper per ogni riga
+                    comments.add(commentMapper.fromResultSet(rs));
                 }
             }
         }
