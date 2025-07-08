@@ -3,7 +3,6 @@ package dao.impl;
 import dao.UserDao;
 import model.User;
 import model.Role;
-import model.mapper.UserMapper;
 import util.DatabaseConnection;
 import exception.AuthenticationException;
 
@@ -11,9 +10,6 @@ import java.sql.*;
 import java.time.LocalDate;
 
 public class UserDAOImpl implements UserDao {
-
-    // NUOVO: Aggiungiamo il mapper
-    private final UserMapper userMapper = new UserMapper();
 
     private boolean checkPassword(String storedPassword, String providedPassword) {
         return storedPassword.equals(providedPassword);
@@ -32,8 +28,22 @@ public class UserDAOImpl implements UserDao {
                 if (rs.next()) {
                     String storedPassword = rs.getString("password");
                     if (checkPassword(storedPassword, password)) {
-                        // MODIFICATO: Ora usa il mapper invece del codice di mappatura manuale
-                        return userMapper.fromResultSet(rs);
+                        // --- LOGICA DEL MAPPER INTEGRATA QUI ---
+                        User user = new User();
+                        user.setUsername(rs.getString("username"));
+                        user.setName(rs.getString("name"));
+                        user.setSurname(rs.getString("surname"));
+                        Date sqlDateOfBirth = rs.getDate("dateofbirth");
+                        if (sqlDateOfBirth != null) {
+                            user.setDateOfBirth(sqlDateOfBirth.toLocalDate());
+                        }
+                        user.setCellphone(rs.getString("cellphone"));
+                        user.setEmail(rs.getString("email"));
+                        user.setPassword(rs.getString("password"));
+                        String roleValue = rs.getString("role");
+                        user.setRole(Role.fromDbValue(roleValue));
+                        return user;
+                        // --- FINE LOGICA INTEGRATA ---
                     } else {
                         throw new AuthenticationException("Credenziali non valide.");
                     }
@@ -49,12 +59,19 @@ public class UserDAOImpl implements UserDao {
         String sql = "INSERT INTO users (username, name, surname, dateofbirth, cellphone, email, password, role) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
-        String passwordToStore = user.getPassword();
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            // MODIFICATO: Ora usa il mapper per settare i parametri
-            userMapper.setInsertParameters(ps, user);
+            // --- LOGICA DEL MAPPER INTEGRATA QUI ---
+            ps.setString(1, user.getUsername());
+            ps.setString(2, user.getName());
+            ps.setString(3, user.getSurname());
+            ps.setDate(4, Date.valueOf(user.getDateOfBirth()));
+            ps.setString(5, user.getCellphone());
+            ps.setString(6, user.getEmail());
+            ps.setString(7, user.getPassword());
+            ps.setString(8, user.getRole().getDbValue());
+            // --- FINE LOGICA INTEGRATA ---
 
             int affectedRows = ps.executeUpdate();
             return affectedRows > 0;

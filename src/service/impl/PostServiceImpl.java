@@ -42,7 +42,6 @@ public class PostServiceImpl implements PostService {
             throw new IllegalArgumentException("Solo gli utenti con ruolo AUTORE possono creare post.");
         }
 
-        // Altre logiche di business, es. controllo anti-spam, validazione contenuti, etc.
 
         return postDAO.createPost(post);
     }
@@ -50,7 +49,6 @@ public class PostServiceImpl implements PostService {
     @Override
     public Post getPostById(int postId) throws SQLException {
         if (postId <= 0) {
-            // O restituire null, o lanciare eccezione. Il DAO potrebbe già restituire null.
             return null;
         }
         return postDAO.getPostById(postId);

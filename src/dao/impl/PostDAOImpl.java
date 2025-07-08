@@ -2,7 +2,6 @@ package dao.impl;
 
 import dao.PostDao;
 import model.Post;
-import model.mapper.PostMapper;
 import util.DatabaseConnection;
 
 import java.sql.*;
@@ -10,9 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PostDAOImpl implements PostDao {
-
-    // NUOVO: Aggiungiamo il mapper
-    private final PostMapper postMapper = new PostMapper();
 
     @Override
     public boolean createPost(Post post) throws SQLException {
@@ -22,8 +18,14 @@ public class PostDAOImpl implements PostDao {
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-            // MODIFICATO: Ora usa il mapper per settare i parametri
-            postMapper.setInsertParameters(ps, post);
+            // --- LOGICA DEL MAPPER INTEGRATA QUI ---
+            ps.setString(1, post.getAuthorUsername());
+            ps.setBytes(2, post.getImageData());
+            ps.setLong(3, post.getImageSize());
+            ps.setString(4, post.getImageFormat());
+            ps.setString(5, post.getDescription());
+            ps.setInt(6, 0); // likes_count iniziale sempre 0
+            // --- FINE LOGICA INTEGRATA ---
 
             int affectedRows = ps.executeUpdate();
 
@@ -42,19 +44,17 @@ public class PostDAOImpl implements PostDao {
     @Override
     public Post getPostById(int postId) throws SQLException {
         String sql = "SELECT post_id, author_username, image_data, image_size, image_format, description, likes_count, created_at FROM posts WHERE post_id = ?";
-        Post post = null;
 
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, postId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    // MODIFICATO: Ora usa il mapper invece del codice di mappatura manuale
-                    post = postMapper.fromResultSet(rs);
+                    return mapResultSetToPost(rs); // Usa il metodo helper
                 }
             }
         }
-        return post;
+        return null;
     }
 
     @Override
@@ -67,12 +67,29 @@ public class PostDAOImpl implements PostDao {
              ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
-                // MODIFICATO: Ora usa il mapper per ogni riga
-                posts.add(postMapper.fromResultSet(rs));
+                posts.add(mapResultSetToPost(rs)); // Usa il metodo helper
             }
         }
         return posts;
     }
+
+    // --- METODO HELPER CON LOGICA DEL MAPPER ---
+    private Post mapResultSetToPost(ResultSet rs) throws SQLException {
+        Post post = new Post();
+        post.setPostId(rs.getInt("post_id"));
+        post.setAuthorUsername(rs.getString("author_username"));
+        post.setImageData(rs.getBytes("image_data"));
+        post.setImageSize(rs.getLong("image_size"));
+        post.setImageFormat(rs.getString("image_format"));
+        post.setDescription(rs.getString("description"));
+        post.setLikesCount(rs.getInt("likes_count"));
+        Timestamp createdAtTimestamp = rs.getTimestamp("created_at");
+        if (createdAtTimestamp != null) {
+            post.setCreatedAt(createdAtTimestamp.toLocalDateTime());
+        }
+        return post;
+    }
+    // --- FINE METODO HELPER ---
 
     @Override
     public boolean addLike(int postId) throws SQLException {
