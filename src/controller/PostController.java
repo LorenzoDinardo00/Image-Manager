@@ -113,7 +113,7 @@ public class PostController {
                 break;
             }
 
-            Post selectedPost = posts.stream().filter(p -> p.getPostId() == postIdToInteract).findFirst().orElse(null); //
+            Post selectedPost = posts.stream().filter(p -> p.getPostId() == postIdToInteract).findFirst().orElse(null);
 
             if (selectedPost == null) {
 

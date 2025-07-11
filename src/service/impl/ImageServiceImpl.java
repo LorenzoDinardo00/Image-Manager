@@ -26,14 +26,13 @@ public class ImageServiceImpl implements ImageService {
             if (!inputFile.exists() || !inputFile.isFile()) {
                 throw new IOException("File non trovato o non è un file valido: " + path);
             }
-            BufferedImage bufferedImage = ImageIO.read(inputFile); //
+            BufferedImage bufferedImage = ImageIO.read(inputFile);
             if (bufferedImage == null) {
                 throw new IOException("Impossibile leggere l'immagine dal percorso (formato non supportato o file corrotto): " + path);
             }
-            return new Image(bufferedImage); //
+            return new Image(bufferedImage);
         } catch (IOException e) {
-            // e.printStackTrace(); // Il logging dovrebbe essere gestito a un livello superiore o con un logger dedicato
-            throw e; // Rilancia l'eccezione perché il service la dichiara
+            throw e;
         }
     }
 
@@ -47,7 +46,7 @@ public class ImageServiceImpl implements ImageService {
             throw new IllegalArgumentException("Percorso cartella e nome immagine non possono essere vuoti.");
         }
 
-        BufferedImage bufferedImage = image.getBufferedImage(); //
+        BufferedImage bufferedImage = image.getBufferedImage();
         Path dirPath = Paths.get(folderPath);
 
         if (!Files.exists(dirPath)) {
@@ -57,25 +56,22 @@ public class ImageServiceImpl implements ImageService {
                 throw new IOException("Impossibile creare la directory di destinazione: " + folderPath, e);
             }
         } else if (!Files.isDirectory(dirPath)) {
-            throw new IllegalArgumentException("Il percorso specificato non è una directory: " + folderPath); //
+            throw new IllegalArgumentException("Il percorso specificato non è una directory: " + folderPath);
         }
 
-        // Aggiunge l'estensione .png se non presente (o la normalizza)
         String finalImageName = imageName.toLowerCase().endsWith(".png") ? imageName : imageName + ".png";
-        File outputFile = new File(dirPath.toFile(), finalImageName); //
+        File outputFile = new File(dirPath.toFile(), finalImageName);
 
         try {
-            boolean success = ImageIO.write(bufferedImage, "png", outputFile); //
+            boolean success = ImageIO.write(bufferedImage, "png", outputFile);
             if (success) {
                 System.out.println("Immagine salvata correttamente al seguente percorso " + outputFile.getAbsolutePath()); //
-            } else {
-                // Questo caso è raro con ImageIO.write se non lancia eccezione, ma meglio gestirlo
+            } else {           
                 System.err.println("ImageIO.write ha restituito false senza eccezioni per: " + outputFile.getAbsolutePath());
             }
             return success;
         } catch (IOException e) {
-            // e.printStackTrace(); // Logging
-            throw e; //
+            throw e;
         }
     }
 
@@ -83,8 +79,6 @@ public class ImageServiceImpl implements ImageService {
     public BufferedImage applyFilter(BufferedImage inputImage, Filter filter) throws IllegalArgumentException {
         Objects.requireNonNull(inputImage, "L'immagine di input non può essere nulla.");
         Objects.requireNonNull(filter, "Il filtro non può essere nullo.");
-
-        // La logica di apply è già nel filtro stesso
         return filter.apply(inputImage);
     }
 }

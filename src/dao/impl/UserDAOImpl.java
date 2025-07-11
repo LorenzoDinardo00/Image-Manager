@@ -28,7 +28,6 @@ public class UserDAOImpl implements UserDao {
                 if (rs.next()) {
                     String storedPassword = rs.getString("password");
                     if (checkPassword(storedPassword, password)) {
-                        // --- LOGICA DEL MAPPER INTEGRATA QUI ---
                         User user = new User();
                         user.setUsername(rs.getString("username"));
                         user.setName(rs.getString("name"));
@@ -43,7 +42,6 @@ public class UserDAOImpl implements UserDao {
                         String roleValue = rs.getString("role");
                         user.setRole(Role.fromDbValue(roleValue));
                         return user;
-                        // --- FINE LOGICA INTEGRATA ---
                     } else {
                         throw new AuthenticationException("Credenziali non valide.");
                     }
@@ -62,7 +60,6 @@ public class UserDAOImpl implements UserDao {
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            // --- LOGICA DEL MAPPER INTEGRATA QUI ---
             ps.setString(1, user.getUsername());
             ps.setString(2, user.getName());
             ps.setString(3, user.getSurname());
@@ -71,7 +68,6 @@ public class UserDAOImpl implements UserDao {
             ps.setString(6, user.getEmail());
             ps.setString(7, user.getPassword());
             ps.setString(8, user.getRole().getDbValue());
-            // --- FINE LOGICA INTEGRATA ---
 
             int affectedRows = ps.executeUpdate();
             return affectedRows > 0;

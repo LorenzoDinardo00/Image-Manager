@@ -16,12 +16,10 @@ public class CommentDAOImpl implements CommentDao {
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-            // --- LOGICA DEL MAPPER INTEGRATA QUI ---
             ps.setInt(1, comment.getPostId());
             ps.setString(2, comment.getCommenterUsername());
             ps.setString(3, comment.getCommentText());
-            // --- FINE LOGICA INTEGRATA ---
-
+            
             int affectedRows = ps.executeUpdate();
             if (affectedRows > 0) {
                 try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
@@ -44,7 +42,7 @@ public class CommentDAOImpl implements CommentDao {
             ps.setInt(1, postId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    comments.add(mapResultSetToComment(rs)); // Usa il metodo helper
+                    comments.add(mapResultSetToComment(rs));
                 }
             }
         }

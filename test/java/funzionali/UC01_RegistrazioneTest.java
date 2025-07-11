@@ -36,7 +36,6 @@ public class UC01_RegistrazioneTest extends BaseTest {
     protected void additionalSetup() throws Exception {
         testConnection = TestDatabaseConfig.getTestConnection();
 
-        // Creiamo un UserDAO che usa la connessione di test
         userDao = new UserDAOImpl() {
             @Override
             protected Connection getConnection() throws SQLException {
@@ -137,7 +136,6 @@ public class UC01_RegistrazioneTest extends BaseTest {
     @Order(4)
     @DisplayName("Registrazione con data di nascita al limite consentito")
     void testRegistrazioneDataNascitaLimite() throws SQLException {
-        // Arrange - utente appena maggiorenne (18 anni fa da oggi)
         LocalDate dataLimite = LocalDate.now().minusYears(18);
         User utente = TestDataBuilder.createCustomUser(
                 "giovane_utente",

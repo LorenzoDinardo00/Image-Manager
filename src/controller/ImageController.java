@@ -16,8 +16,6 @@ public class ImageController {
     private final ImageService imageService;
     private final Scanner scanner;
     private final FilterRegistry filterRegistry;
-
-    // Definiamo qui la cartella di salvataggio, potrebbe essere resa configurabile
     private static final String LOCAL_SAVED_IMAGES_FOLDER = "immagini_salvate_localmente";
 
 
@@ -48,7 +46,7 @@ public class ImageController {
             return;
         }
 
-        String fixedLocalSavePath = Paths.get(System.getProperty("user.dir"), LOCAL_SAVED_IMAGES_FOLDER).toString(); //
+        String fixedLocalSavePath = Paths.get(System.getProperty("user.dir"), LOCAL_SAVED_IMAGES_FOLDER).toString();
 
         System.out.print("Inserisci il nome dell'immagine da salvare (senza estensione, sarà .png): ");
         String imageNameSave = scanner.nextLine();
@@ -56,7 +54,7 @@ public class ImageController {
         try {
             if (imageService.saveImage(loadedImg, fixedLocalSavePath, imageNameSave)) {
             } else {
-                System.out.println("Errore nel salvataggio locale dell'immagine (ImageService ha restituito false)."); //
+                System.out.println("Errore nel salvataggio locale dell'immagine (ImageService ha restituito false).");
             }
         } catch (IOException e) {
             System.err.println("Errore I/O durante il salvataggio dell'immagine: " + e.getMessage());
@@ -112,7 +110,7 @@ public class ImageController {
 
             if (filteredBI != null) {
                 Image modifiedImage = new Image(filteredBI);
-                System.out.print("Vuoi salvare l'immagine modificata (nella cartella '" + LOCAL_SAVED_IMAGES_FOLDER + "')? (y/n): "); //
+                System.out.print("Vuoi salvare l'immagine modificata (nella cartella '" + LOCAL_SAVED_IMAGES_FOLDER + "')? (y/n): ");
                 if (scanner.nextLine().equalsIgnoreCase("y")) {
                     saveLoadedImage(modifiedImage);
                 }

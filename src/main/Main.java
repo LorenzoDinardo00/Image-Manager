@@ -39,10 +39,9 @@ public class Main {
         CommentDao commentDAO = new CommentDAOImpl();
 
         // 2. Creazione dei Service (implementazioni concrete, con iniezione dei DAO)
-        // Si usano le interfacce per dichiarare i service, ma si istanziano le implementazioni
         AuthService authService = new AuthServiceImpl(userDAO);
         PostService postService = new PostServiceImpl(postDAO, commentDAO);
-        ImageService imageService = new ImageServiceImpl(); // ImageServiceImpl non ha dipendenze DAO nel costruttore attualmente
+        ImageService imageService = new ImageServiceImpl();
 
         // 3. Creazione dei Controller (con iniezione dei Service)
         AuthController authController = new AuthController(authService, scanner);
@@ -65,14 +64,13 @@ public class Main {
 
             if (!scanner.hasNextInt()) {
                 System.out.println("Input non valido. Per favore inserisci un numero.");
-                scanner.next(); // Consuma l'input non valido
-                scelta = -1; // Assegna un valore che non sia 0 per continuare il loop
+                scanner.next();
+                scelta = -1;
                 continue;
             }
             scelta = scanner.nextInt();
-            scanner.nextLine(); // Consuma il newline rimasto
+            scanner.nextLine();
 
-            // Ora Main interagisce solo con i Controller
             if (currentUser == null) {
                 handleVisitorActions(scelta, authController, postController);
             } else {
@@ -114,9 +112,6 @@ public class Main {
         System.out.println("0. Esci dall'applicazione");
     }
 
-    // handleVisitorActions e handleUserActions rimangono invariati
-    // poiché già utilizzano i controller passati come argomenti.
-
     private static void handleVisitorActions(int scelta, AuthController authController, PostController postController) {
         switch (scelta) {
             case 1: // LOGIN
@@ -145,14 +140,11 @@ public class Main {
                     if (loadedImg != null) {
                         System.out.println("Attenzione: un'immagine è già caricata. Se carichi una nuova immagine, quella precedente verrà sovrascritta (se non salvata/pubblicata).");
                         System.out.print("Vuoi continuare? (y/n): ");
-                        // È meglio usare lo scanner globale passato o uno scanner locale temporaneo con attenzione
-                        // Per semplicità, creo uno scanner temporaneo qui per non interferire con il flusso principale
                         Scanner tempScanner = new Scanner(System.in);
                         if (!tempScanner.nextLine().equalsIgnoreCase("y")) {
                             System.out.println("Caricamento annullato.");
                             break;
                         }
-                        // tempScanner.close(); // Non chiudere System.in se usato altrove, o usare con try-with-resources
                     }
                     loadedImg = imageController.loadImage();
                     break;
@@ -162,32 +154,18 @@ public class Main {
                 case 5: // MODIFICA IMMAGINE CARICATA
                     Image potentiallyModifiedImage = imageController.modifyLoadedImage(loadedImg);
                     if (potentiallyModifiedImage != null) {
-                        loadedImg = potentiallyModifiedImage; // Aggiorna l'immagine caricata se è stata modificata
+                        loadedImg = potentiallyModifiedImage;
                     }
                     break;
                 case 8: // PUBBLICA IMMAGINE CARICATA COME POST
                     postController.publishLoadedImageAsPost(loadedImg, currentUser);
-                    // Opzionalmente, si potrebbe resettare loadedImg a null dopo la pubblicazione
-                    // se l'immagine in memoria non serve più immediatamente.
-                    // loadedImg = null;
                     break;
             }
         }
 
-        // Azioni comuni a tutti gli utenti loggati (o che cadono qui se non gestite sopra per AUTORE)
-        // Nota: per evitare che un'azione di AUTORE venga interpretata come "Scelta non valida"
-        // se non è una delle azioni comuni, è meglio strutturare diversamente o
-        // aggiungere un controllo per vedere se l'azione è già stata gestita.
-        // L'attuale struttura con due switch potrebbe portare a messaggi di "Scelta non valida"
-        // se un AUTORE sceglie 3,4,5,8 e poi il secondo switch non trova un match.
-        // Una soluzione è unire gli switch o usare if/else if.
-
-        // Per mantenere la logica il più simile possibile all'originale, ma correggendo
-        // il potenziale doppio messaggio di "Scelta non valida":
-
         boolean actionHandled = false;
         if (currentUser.getRole() == Role.AUTORE && (scelta == 3 || scelta == 4 || scelta == 5 || scelta == 8)) {
-            actionHandled = true; // L'azione è stata gestita nel blocco AUTORE
+            actionHandled = true;
         }
 
 
@@ -205,7 +183,7 @@ public class Main {
                 actionHandled = true;
                 break;
             default:
-                if (!actionHandled) { // Se l'azione non è stata gestita né nel blocco AUTORE né in quelli comuni
+                if (!actionHandled) {
                     if (currentUser.getRole() == Role.OSSERVATORE && (scelta == 3 || scelta == 4 || scelta == 5 || scelta == 8)) {
                         System.out.println("Scelta non valida per OSSERVATORE.");
                     } else {

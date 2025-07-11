@@ -17,7 +17,6 @@ public class BlurFilter implements Filter {
             imageType = BufferedImage.TYPE_INT_ARGB;
         }
         BufferedImage outputImage = new BufferedImage(width, height, imageType);
-        // Applichiamo un semplice box blur 3x3
         for (int y = 1; y < height - 1; y++) {
             for (int x = 1; x < width - 1; x++) {
                 int sumRed = 0, sumGreen = 0, sumBlue = 0;
@@ -40,7 +39,6 @@ public class BlurFilter implements Filter {
             }
         }
 
-        // Copia i bordi senza modifiche
         for (int x = 0; x < width; x++) {
             outputImage.setRGB(x, 0, inputImage.getRGB(x, 0));
             outputImage.setRGB(x, height - 1, inputImage.getRGB(x, height - 1));

@@ -79,16 +79,16 @@ public class AuthController {
             }
         }
 
-        User newUser = new User(regUsername, regName, regSurname, regDateOfBirth, regCellphone, regEmail, regPassword, regRole); //
+        User newUser = new User(regUsername, regName, regSurname, regDateOfBirth, regCellphone, regEmail, regPassword, regRole);
 
         try {
             if (authService.register(newUser)) {
-                System.out.println("Registrazione avvenuta con successo! Ora puoi effettuare il login."); //
+                System.out.println("Registrazione avvenuta con successo! Ora puoi effettuare il login.");
             } else {
                 System.out.println("Errore sconosciuto nella registrazione.");
             }
         } catch (SQLException e) {
-            System.err.println("Errore del database durante la registrazione: " + e.getMessage()); //
+            System.err.println("Errore del database durante la registrazione: " + e.getMessage());
         } catch (IllegalArgumentException e) {
             System.err.println("Errore nei dati per la registrazione: " + e.getMessage());
         }

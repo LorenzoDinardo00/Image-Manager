@@ -18,14 +18,12 @@ public class PostDAOImpl implements PostDao {
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-            // --- LOGICA DEL MAPPER INTEGRATA QUI ---
             ps.setString(1, post.getAuthorUsername());
             ps.setBytes(2, post.getImageData());
             ps.setLong(3, post.getImageSize());
             ps.setString(4, post.getImageFormat());
             ps.setString(5, post.getDescription());
-            ps.setInt(6, 0); // likes_count iniziale sempre 0
-            // --- FINE LOGICA INTEGRATA ---
+            ps.setInt(6, 0);
 
             int affectedRows = ps.executeUpdate();
 
@@ -50,7 +48,7 @@ public class PostDAOImpl implements PostDao {
             ps.setInt(1, postId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return mapResultSetToPost(rs); // Usa il metodo helper
+                    return mapResultSetToPost(rs);
                 }
             }
         }
@@ -67,13 +65,12 @@ public class PostDAOImpl implements PostDao {
              ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
-                posts.add(mapResultSetToPost(rs)); // Usa il metodo helper
+                posts.add(mapResultSetToPost(rs));
             }
         }
         return posts;
     }
 
-    // --- METODO HELPER CON LOGICA DEL MAPPER ---
     private Post mapResultSetToPost(ResultSet rs) throws SQLException {
         Post post = new Post();
         post.setPostId(rs.getInt("post_id"));
@@ -89,7 +86,6 @@ public class PostDAOImpl implements PostDao {
         }
         return post;
     }
-    // --- FINE METODO HELPER ---
 
     @Override
     public boolean addLike(int postId) throws SQLException {

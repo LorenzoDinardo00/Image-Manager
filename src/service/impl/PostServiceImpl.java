@@ -32,7 +32,7 @@ public class PostServiceImpl implements PostService {
             throw new IllegalArgumentException("I dati dell'immagine non possono essere vuoti.");
         }
         if (post.getDescription() == null || post.getDescription().trim().isEmpty()) {
-            post.setDescription(""); // o lanciare eccezione se la descrizione è obbligatoria
+            post.setDescription("");
         }
         if (!post.getAuthorUsername().equals(currentUser.getUsername())) {
             throw new IllegalArgumentException("L'autore del post deve corrispondere all'utente corrente.");
@@ -61,8 +61,6 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public boolean addLikeToPost(int postId, User currentUser) throws SQLException, IllegalArgumentException {
-        // currentUser è opzionale qui, potrebbe essere usato per logica futura
-        // (es. impedire like multipli dallo stesso utente, se non gestito a livello DB/DAO)
         if (postId <= 0) {
             throw new IllegalArgumentException("ID Post non valido.");
         }
@@ -92,7 +90,6 @@ public class PostServiceImpl implements PostService {
         if (post == null) {
             throw new IllegalArgumentException("Post non trovato con ID: " + comment.getPostId() + " per cui aggiungere il commento.");
         }
-        // Non ci sono restrizioni di ruolo per commentare nel codice originale
 
         return commentDAO.addComment(comment);
     }

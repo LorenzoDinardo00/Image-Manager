@@ -48,7 +48,6 @@ public class AuthServiceImpl implements AuthService {
     public void logout(User user) {
 
         if (user != null) {
-            System.out.println("Logout concettuale per l'utente: " + user.getUsername() + " nel Service Layer."); // Modificato da
-        }
+            System.out.println("Logout concettuale per l'utente: " + user.getUsername() + " nel Service Layer.");        }
     }
 }
